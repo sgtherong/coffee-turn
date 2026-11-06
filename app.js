@@ -57,19 +57,23 @@ function render() {
   });
   const row = $('member-row');
   row.replaceChildren();
-  row.style.gridTemplateColumns = 'repeat(' + MEMBERS[mode].length + ', minmax(0, 1fr))';
-  for (const name of MEMBERS[mode]) {
+  const members = MEMBERS[mode];
+  const firstIndex = members.indexOf(next);
+  const upcoming = [...members.slice(firstIndex), ...members.slice(0, firstIndex)];
+  row.style.gridTemplateColumns = 'repeat(' + members.length + ', minmax(0, 1fr))';
+  upcoming.forEach((name, index) => {
     const card = document.createElement('div');
-    card.className = 'member-card' + (name === next ? ' is-next' : '');
+    card.className = 'member-card' + (index === 0 ? ' is-next' : '');
     const letter = document.createElement('div');
     letter.className = 'member-letter';
     letter.textContent = displayName(name);
     const status = document.createElement('div');
     status.className = 'member-status';
-    status.textContent = name === next ? '다음 순번' : '대기';
+    status.textContent = index === 0 ? '다음 구매' : (index + 1) + '번째 구매';
     card.append(letter, status);
     row.append(card);
-  }
+  });
+  $('rotation-order').textContent = upcoming.map(displayName).join(' → ') + ' → ' + displayName(upcoming[0]);
   const list = $('history');
   list.replaceChildren();
   if (history.length === 0) {
