@@ -1,9 +1,11 @@
-// Firebase Console → 프로젝트 설정 → 내 앱 → 웹 앱 → SDK 설정 및 구성의 firebaseConfig를 복사하세요.
-// Firebase 웹앱 구성값은 공개용 식별자이며, 데이터 접근은 firestore.rules 의 UID 허용 목록으로 제한합니다.
-// 개인 비밀번호 / 서비스 계정 개인키는 절대 여기에 넣지 마세요.
+// Firebase public web configuration. Access is enforced by Firestore security rules.
+// Never put service-account private keys or user passwords in this file.
 export const firebaseConfig = {
-  apiKey: '',
-  authDomain: '',
-  projectId: '',
-  appId: ''
+  apiKey: 'AIzaSyDAv6b6parUhNDSTHFTzez4f3g-g-oCajU',
+  authDomain: 'coffee-turn-b2a28.firebaseapp.com',
+  projectId: 'coffee-turn-b2a28',
+  storageBucket: 'coffee-turn-b2a28.firebasestorage.app',
+  messagingSenderId: '879036105395',
+  appId: '1:879036105395:web:b67038a2d37ba4e2dde6c6',
+  measurementId: 'G-JEK7ZVB2FX'
 };
