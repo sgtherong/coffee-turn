@@ -70,3 +70,11 @@ tests/              순번 로직 자동 테스트
 - Firebase 연결 후 브라우저 간 거래는 Firestore `runTransaction`을 통해 충돌을 줄입니다. 오프라인 상태에서 구매를 저장하는 기능은 지원하지 않습니다.
 - 기록은 최근 20건만 화면에 표시하며 Firebase 이벤트 저장은 계속됩니다. 장기간 운영 시 기록 보관/정리 정책을 추가하는 것을 권장합니다.
 - 누구나 GitHub Pages 화면은 볼 수 있지만, Firebase 인증 계정 + Firestore UID 허용목록에 없으면 **공유 데이터에는 접근할 수 없습니다.**
+
+## 로그인 유지 점검 (2026-11-06)
+
+- Firebase Auth 로그인 시 `browserLocalPersistence`를 우선 명시하고, 이용 불가능한 환경은 `indexedDBLocalPersistence`로 재시도합니다.
+- 로그아웃하면 저장된 인증 상태가 삭제됩니다.
+- 시크릿 창, 앱 내부 브라우저, 사이트 데이터 자동 삭제/차단 환경은 로그인 상태가 유지되지 않을 수 있습니다.
+- GitHub Pages 주소 `https://sgtherong.github.io/coffee-turn/`를 **항상 같은 브라우저**에서 열어 주세요.
+- 저장소 파일 변경 후 브라우저에 오래된 HTML이 남는 문제를 줄이려고 JS 버전 쿼리를 사용합니다.
