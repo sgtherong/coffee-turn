@@ -1,6 +1,9 @@
 /** Pure, testable rotation logic. No network or browser dependencies. */
 export const MEMBERS = Object.freeze({ ABC: Object.freeze(['A','B','C']), AB: Object.freeze(['A','B']) });
 export const MODES = Object.freeze(['ABC','AB']);
+// Keep stable A/B/C identifiers in saved history and rotation state.
+export const MEMBER_NAMES = Object.freeze({ A: '토니', B: '코비', C: '영' });
+export function displayName(memberId) { return MEMBER_NAMES[memberId] ?? memberId; }
 
 export function initialState() {
   return { next: { ABC: 0, AB: 0 }, counts: { ABC: 0, AB: 0 }, lastEventId: null };
