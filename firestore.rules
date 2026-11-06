@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Firebase Authentication -> Users 에서 만든 3명의 UID로 교체하세요.
+    // UID는 공개되더라도 비밀번호가 아니며 타인이 UID를 위조해 로그인할 수 없습니다.
+    function isCoffeeMember() {
+      return request.auth != null && request.auth.uid in [
+        'REPLACE_WITH_MEMBER_A_UID',
+        'REPLACE_WITH_MEMBER_B_UID',
+        'REPLACE_WITH_MEMBER_C_UID'
+      ];
+    }
+
+    match /teams/coffee-turn/state/current {
+      allow read, create, update: if isCoffeeMember();
+      allow delete: if false;
+    }
+    match /teams/coffee-turn/events/{eventId} {
+      allow read, create, delete: if isCoffeeMember();
+      allow update: if false;
+    }
+    match /{other=**} {
+      allow read, write: if false;
+    }
+  }
+}
