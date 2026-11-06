@@ -17,6 +17,27 @@ let eventsCollection = null;
 let unsubscribeState = null;
 let unsubscribeEvents = null;
 let toastTimer;
+let persistentLoginAvailable = true;
+
+// Prefer durable browser storage. If it is blocked, warn instead of silently
+// promising that the user will remain signed in.
+async function configureLoginPersistence(firebaseAuth) {
+  const providers = [
+    firebaseAuth.browserLocalPersistence,
+    firebaseAuth.indexedDBLocalPersistence
+  ].filter(Boolean);
+  for (const provider of providers) {
+    try {
+      await firebaseAuth.setPersistence(auth, provider);
+      persistentLoginAvailable = true;
+      return;
+    } catch (error) {
+      console.warn('Coffee Turn: local sign-in persistence unavailable', error?.code ?? error);
+    }
+  }
+  persistentLoginAvailable = false;
+  reportError('현재 브라우저에서 자동 로그인 저장이 차단되어 있습니다. 일반 Chrome/Edge/Safari 창에서 같은 주소로 열고, 사이트 데이터 및 쿠키 저장을 허용해 주세요. 시크릿 모드나 앱 내부 브라우저에서는 로그인이 유지되지 않을 수 있습니다.');
+}
 
 function show(element, visible) { element.classList.toggle('hidden', !visible); }
 function toast(message) {
@@ -198,6 +219,8 @@ async function startFirebase() {
   ]);
   const app = initializeApp(firebaseConfig);
   auth = firebaseAuth.getAuth(app);
+  $('connection').textContent = '로그인 복원 중';
+  await configureLoginPersistence(firebaseAuth);
   const db = firestore.getFirestore(app);
   api = { ...firestore, db, firebaseAuth };
   stateRef = firestore.doc(db, 'teams', 'coffee-turn', 'state', 'current');
@@ -220,7 +243,7 @@ async function startFirebase() {
     unsubscribeState = firestore.onSnapshot(stateRef, (snapshot) => {
       current = normalizedState(snapshot.exists() ? snapshot.data() : null);
       $('connection').textContent = snapshot.metadata.fromCache ? '오프라인 캐시' : '실시간 연결';
-      show($('error-banner'), false);
+      if (persistentLoginAvailable) show($('error-banner'), false);
       render();
     }, (error) => { ready = false; $('connection').textContent = '연결 오류'; reportError(friendlyError(error)); render(); });
     unsubscribeEvents = firestore.onSnapshot(firestore.query(eventsCollection, firestore.orderBy('createdAt', 'desc'), firestore.limit(30)), (snapshot) => {
@@ -250,6 +273,9 @@ $('login-form').addEventListener('submit', async (event) => {
   button.disabled = true;
   show($('login-error'), false);
   try {
+    // Apply LOCAL persistence before every explicit sign-in, including users
+    // whose previous sessions were saved as SESSION / NONE.
+    await configureLoginPersistence(api.firebaseAuth);
     await api.firebaseAuth.signInWithEmailAndPassword(auth, $('email').value.trim(), $('password').value);
     $('password').value = '';
   } catch (error) {
