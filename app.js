@@ -1,5 +1,5 @@
 import { firebaseConfig } from './firebase-config.js';
-import { MEMBERS, initialState, normalizedState, buyerFor, purchaseTransition, undoTransition } from './rotation.js';
+import { MEMBERS, displayName, initialState, normalizedState, buyerFor, purchaseTransition, undoTransition } from './rotation.js';
 
 const $ = (id) => document.getElementById(id);
 const storageKey = 'coffee-turn-demo-v1';
@@ -45,8 +45,8 @@ function setBusy(value) {
 }
 function render() {
   const next = buyerFor(current, mode);
-  $('next-buyer').textContent = next;
-  $('avatar').textContent = next;
+  $('next-buyer').textContent = displayName(next);
+  $('avatar').textContent = displayName(next);
   $('count-note').textContent = (mode === 'ABC' ? '3인' : '2인') + ' 모드 · 완료 ' + current.counts[mode] + '회';
   $('abc-count').textContent = '3인 구매 ' + current.counts.ABC + '회';
   $('ab-count').textContent = '2인 구매 ' + current.counts.AB + '회';
@@ -63,7 +63,7 @@ function render() {
     card.className = 'member-card' + (name === next ? ' is-next' : '');
     const letter = document.createElement('div');
     letter.className = 'member-letter';
-    letter.textContent = name;
+    letter.textContent = displayName(name);
     const status = document.createElement('div');
     status.className = 'member-status';
     status.textContent = name === next ? '다음 순번' : '대기';
@@ -88,7 +88,7 @@ function render() {
       main.className = 'history-main';
       const title = document.createElement('div');
       title.className = 'history-title';
-      title.textContent = event.buyer + ' · 커피 구매 완료';
+      title.textContent = displayName(event.buyer) + ' · 커피 구매 완료';
       const sub = document.createElement('div');
       sub.className = 'history-sub';
       sub.textContent = formatDate(event.createdAt) + ' · ' + (event.actor ?? '사용자');
