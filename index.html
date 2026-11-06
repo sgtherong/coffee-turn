@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f5f0e7" />
+  <meta name="description" content="A, B, C의 3인 및 2인 커피 순번을 각각 관리하는 공유 웹앱" />
+  <title>Coffee Turn · 오늘은 누가 살까?</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/icon.svg" />
+  <link rel="stylesheet" href="./styles.css" />
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark" aria-hidden="true">☕</div><div><div class="brand-name">Coffee Turn</div><div class="brand-kicker">커피 순번 관리</div></div></div>
+      <div class="top-actions"><span id="connection" class="status-pill">확인 중</span><button id="logout" class="text-button hidden" type="button">로그아웃</button></div>
+    </header>
+
+    <section id="demo-banner" class="notice hidden" role="status"><strong>체험 모드</strong> · 이 기기에만 기록이 저장됩니다. 3명이 공유하려면 Firebase 연결이 필요합니다.</section>
+    <section id="error-banner" class="notice notice-error hidden" role="alert"></section>
+
+    <section id="login-panel" class="panel login-panel hidden">
+      <span class="eyebrow">팀 전용 공간</span>
+      <h1>함께 쓰는 커피 순번</h1>
+      <p class="subtle">관리자가 Firebase에 등록한 계정으로 로그인하세요.</p>
+      <form id="login-form" class="login-form">
+        <label for="email">이메일</label><input id="email" type="email" autocomplete="username" required placeholder="member@example.com" />
+        <label for="password">비밀번호</label><input id="password" type="password" autocomplete="current-password" required placeholder="비밀번호" />
+        <button id="login-submit" class="primary-button" type="submit">로그인하기</button>
+      </form>
+      <p id="login-error" class="form-error hidden" role="alert"></p>
+    </section>
+
+    <section id="main-panel" class="hidden">
+      <div class="heading"><span class="eyebrow">THE DAILY COFFEE RITUAL</span><h1>오늘은 누가 살까?</h1><p>실제 커피를 구매했을 때만 순번이 넘어가요.</p></div>
+
+      <div class="mode-switch" role="group" aria-label="순번 모드">
+        <button type="button" data-mode="ABC" class="mode-button active" aria-pressed="true"><span class="mode-name">3인 모드</span><small>A · B · C</small></button>
+        <button type="button" data-mode="AB" class="mode-button" aria-pressed="false"><span class="mode-name">2인 모드</span><small>A · B</small></button>
+      </div>
+
+      <section class="hero-card" aria-live="polite">
+        <p class="hero-eyebrow">NEXT COFFEE BUYER</p>
+        <div id="avatar" class="avatar">A</div>
+        <p class="hero-caption">다음 커피 담당자</p>
+        <div class="hero-title"><strong id="next-buyer">A</strong><span> 차례예요!</span></div>
+        <p class="hero-description">커피 구매 후 아래 버튼을 눌러주세요.</p>
+        <button id="purchase" type="button" class="primary-button"><span aria-hidden="true">✓</span> 커피 구매 완료</button>
+      </section>
+
+      <section class="mini-panel">
+        <div class="section-head"><h2>순번 현황</h2><span id="count-note" class="meta">3인 모드 · 완료 0회</span></div>
+        <div id="member-row" class="member-row" aria-label="순번 참여자"></div>
+        <div class="mode-counts"><span id="abc-count">3인 구매 0회</span><span class="tiny-dot">·</span><span id="ab-count">2인 구매 0회</span></div>
+      </section>
+
+      <section class="history-panel">
+        <div class="section-head"><div><h2>최근 커피 기록</h2><p class="section-subtitle">두 모드의 구매 기록을 함께 표시합니다.</p></div><button id="undo" type="button" class="outline-button" disabled>마지막 구매 취소</button></div>
+        <div id="history" class="history-list"><p class="empty">아직 커피 구매 기록이 없어요.</p></div>
+      </section>
+
+      <footer><span id="signed-user">Coffee Turn</span><button id="share" class="text-button" type="button">🔗 주소 복사</button></footer>
+    </section>
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+  </main>
+</body>
+</html>
