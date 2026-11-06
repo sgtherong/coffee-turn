@@ -219,8 +219,10 @@ async function startFirebase() {
   ]);
   const app = initializeApp(firebaseConfig);
   auth = firebaseAuth.getAuth(app);
+  // Firebase Auth automatically restores LOCAL sessions on the same origin.
+  // Do not call setPersistence() on every page load: it can disrupt an
+  // existing persisted session in another browser tab.
   $('connection').textContent = '로그인 복원 중';
-  await configureLoginPersistence(firebaseAuth);
   const db = firestore.getFirestore(app);
   api = { ...firestore, db, firebaseAuth };
   stateRef = firestore.doc(db, 'teams', 'coffee-turn', 'state', 'current');
