@@ -3,7 +3,27 @@ import { MEMBERS, displayName, initialState, normalizedState, buyerFor, purchase
 
 const $ = (id) => document.getElementById(id);
 const storageKey = 'coffee-turn-demo-v1';
-let mode = localStorage.getItem('coffee-turn-mode') === 'AB' ? 'AB' : 'ABC';
+const loginMarkerKey = 'coffee-turn-last-successful-login-v1';
+const buildLabel = '2026-11-07 Safari 인증 개선';
+function safeStorageGet(key) {
+  try { return window.localStorage.getItem(key); } catch { return null; }
+}
+function safeStorageSet(key, value) {
+  try { window.localStorage.setItem(key, value); return true; } catch { return false; }
+}
+function safeStorageRemove(key) {
+  try { window.localStorage.removeItem(key); } catch {}
+}
+function storageWritable() {
+  const key = 'coffee-turn-storage-test';
+  try {
+    window.localStorage.setItem(key, 'ok');
+    const success = window.localStorage.getItem(key) === 'ok';
+    window.localStorage.removeItem(key);
+    return success;
+  } catch { return false; }
+}
+let mode = safeStorageGet('coffee-turn-mode') === 'AB' ? 'AB' : 'ABC';
 let current = initialState();
 let history = [];
 let demo = false;
@@ -19,24 +39,26 @@ let unsubscribeEvents = null;
 let toastTimer;
 let persistentLoginAvailable = true;
 
-// Prefer durable browser storage. If it is blocked, warn instead of silently
-// promising that the user will remain signed in.
-async function configureLoginPersistence(firebaseAuth) {
-  const providers = [
-    firebaseAuth.browserLocalPersistence,
-    firebaseAuth.indexedDBLocalPersistence
-  ].filter(Boolean);
-  for (const provider of providers) {
-    try {
-      await firebaseAuth.setPersistence(auth, provider);
-      persistentLoginAvailable = true;
-      return;
-    } catch (error) {
-      console.warn('Coffee Turn: local sign-in persistence unavailable', error?.code ?? error);
-    }
+// Diagnostics contain no credentials, tokens or personal identifiers.
+function renderLoginDiagnostics(status) {
+  const writable = storageWritable();
+  persistentLoginAvailable = writable;
+  const previouslyLoggedIn = !!safeStorageGet(loginMarkerKey);
+  const parts = [
+    '앱 버전: ' + buildLabel,
+    'Safari 사이트 데이터 저장: ' + (writable ? '정상' : '차단 또는 비활성'),
+    '이전에 이 브라우저로 로그인한 기록: ' + (previouslyLoggedIn ? '있음' : '없음'),
+    '현재 Firebase 인증 상태: ' + status
+  ];
+  $('auth-diagnostics-text').textContent = parts.join('\n');
+  if (!writable) {
+    reportError('Safari의 사이트 데이터 저장 기능을 사용할 수 없습니다. Safari 일반 탭을 이용하고 설정 → 앱 → Safari → 고급에서 모든 쿠키 차단을 해제해 주세요.');
+  } else if (previouslyLoggedIn && status === '로그인 정보 없음') {
+    $('login-note').textContent = '이 기기에 이전 로그인 흔적이 있지만 Firebase 세션을 복원하지 못했습니다. 아래 “로그인 유지 진단”에서 상태를 확인해 주세요.';
+    show($('login-note'), true);
+  } else {
+    show($('login-note'), false);
   }
-  persistentLoginAvailable = false;
-  reportError('현재 브라우저에서 자동 로그인 저장이 차단되어 있습니다. 일반 Chrome/Edge/Safari 창에서 같은 주소로 열고, 사이트 데이터 및 쿠키 저장을 허용해 주세요. 시크릿 모드나 앱 내부 브라우저에서는 로그인이 유지되지 않을 수 있습니다.');
 }
 
 function show(element, visible) { element.classList.toggle('hidden', !visible); }
@@ -218,10 +240,15 @@ async function startFirebase() {
     import('https://www.gstatic.com/firebasejs/' + version + '/firebase-firestore.js')
   ]);
   const app = initializeApp(firebaseConfig);
-  auth = firebaseAuth.getAuth(app);
-  // Firebase Auth automatically restores LOCAL sessions on the same origin.
-  // Do not call setPersistence() on every page load: it can disrupt an
-  // existing persisted session in another browser tab.
+  // Safari: consistently use durable localStorage first, with IndexedDB
+  // as a fallback and migration source for previously saved auth sessions.
+  // Do not switch persistence on each login or reload.
+  auth = firebaseAuth.initializeAuth(app, {
+    persistence: [
+      firebaseAuth.browserLocalPersistence,
+      firebaseAuth.indexedDBLocalPersistence
+    ]
+  });
   $('connection').textContent = '로그인 복원 중';
   const db = firestore.getFirestore(app);
   api = { ...firestore, db, firebaseAuth };
@@ -237,8 +264,11 @@ async function startFirebase() {
       show($('main-panel'), false);
       show($('login-panel'), true);
       $('connection').textContent = '로그인 필요';
+      renderLoginDiagnostics('로그인 정보 없음');
       return;
     }
+    renderLoginDiagnostics('로그인 확인됨');
+    safeStorageSet(loginMarkerKey, 'yes');
     $('connection').textContent = '동기화 중';
     ready = false;
     viewApp();
@@ -259,7 +289,7 @@ $('undo').addEventListener('click', undoCoffee);
 document.querySelectorAll('[data-mode]').forEach((button) => {
   button.addEventListener('click', () => {
     mode = button.dataset.mode;
-    localStorage.setItem('coffee-turn-mode', mode);
+    safeStorageSet('coffee-turn-mode', mode);
     render();
   });
 });
@@ -267,7 +297,14 @@ $('share').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText(location.href); toast('웹앱 주소를 복사했어요.'); }
   catch { toast('주소창의 URL을 복사해서 공유해 주세요.'); }
 });
-$('logout').addEventListener('click', async () => { if (auth) await api.firebaseAuth.signOut(auth); });
+$('logout').addEventListener('click', async () => {
+  if (!auth) return;
+  try {
+    await api.firebaseAuth.signOut(auth);
+    safeStorageRemove(loginMarkerKey);
+    renderLoginDiagnostics('로그아웃됨');
+  } catch (error) { reportError('로그아웃 실패: ' + friendlyError(error)); }
+});
 $('login-form').addEventListener('submit', async (event) => {
   event.preventDefault();
   if (!auth) return;
@@ -275,10 +312,10 @@ $('login-form').addEventListener('submit', async (event) => {
   button.disabled = true;
   show($('login-error'), false);
   try {
-    // Apply LOCAL persistence before every explicit sign-in, including users
-    // whose previous sessions were saved as SESSION / NONE.
-    await configureLoginPersistence(api.firebaseAuth);
+    // Persistence was configured once at initializeAuth(). Never save a
+    // password or Firebase token in app-managed localStorage.
     await api.firebaseAuth.signInWithEmailAndPassword(auth, $('email').value.trim(), $('password').value);
+    safeStorageSet(loginMarkerKey, 'yes');
     $('password').value = '';
   } catch (error) {
     $('login-error').textContent = friendlyError(error);
