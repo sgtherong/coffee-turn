@@ -80,3 +80,11 @@ tests/              순번 로직 자동 테스트
 - 저장소 파일 변경 후 브라우저에 오래된 HTML이 남는 문제를 줄이려고 JS 버전 쿼리를 사용합니다.
 
 - 인증 초기화 시에는 기존 Firebase LOCAL 로그인 정보를 건드리지 않으며, 로그인 버튼을 눌렀을 때만 명시적으로 저장 방식을 설정합니다.
+
+## iPhone Safari 영구 로그인 개선 (2026-11-07)
+
+- `initializeAuth(app, {persistence: [browserLocalPersistence, indexedDBLocalPersistence]})`를 명시하여 Safari에 일관된 LOCAL 인증 저장 방식을 적용합니다. 이전 IndexedDB 세션은 SDK가 이전합니다.
+- 로그인·재접속 때마다 `setPersistence`를 반복 호출하지 않습니다.
+- 로그인 화면에서 **로그인 유지 진단**을 열어 Safari 사이트 저장 가능 여부, 이전 로그인 기록 존재 여부, 복원된 Firebase 세션 여부를 확인할 수 있습니다. 진단에는 비밀번호 및 토큰이 포함되지 않습니다.
+- Safari **개인정보 보호 브라우징(시크릿 모드)**, 사이트 데이터 수동 삭제, 저장소 차단, Safari 및 홈 화면 앱처럼 서로 다른 저장 공간을 이용할 때 영구 로그인을 보장할 수 없습니다.
+- 비밀번호 및 Firebase 인증 토큰을 앱의 별도 저장소에 복제하지 않습니다.
