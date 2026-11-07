@@ -8,7 +8,7 @@
   <title>Coffee Turn · 오늘은 누가 살까?</title>
   <link rel="icon" type="image/svg+xml" href="./assets/icon.svg" />
   <link rel="stylesheet" href="./styles.css" />
-  <script type="module" src="./app.js?v=20261106-login3"></script>
+  <script type="module" src="./app.js?v=20261107-safari4"></script>
 </head>
 <body>
   <main class="shell">
@@ -30,6 +30,12 @@
         <button id="login-submit" class="primary-button" type="submit">로그인하기</button>
       </form>
       <p id="login-error" class="form-error hidden" role="alert"></p>
+      <p id="login-note" class="notice hidden" role="status"></p>
+      <details class="auth-diagnostics">
+        <summary>로그인 유지 진단</summary>
+        <p id="auth-diagnostics-text" class="auth-diagnostics-text">브라우저 인증 상태 확인 중…</p>
+        <p class="subtle">비밀번호·인증 토큰 등 민감한 정보는 표시되지 않습니다.</p>
+      </details>
     </section>
 
     <section id="main-panel" class="hidden">
