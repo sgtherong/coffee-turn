@@ -1,5 +1,5 @@
 import { firebaseConfig } from './firebase-config.js';
-import { MEMBERS, displayName, initialState, normalizedState, buyerFor, purchaseTransition, undoTransition } from './rotation.js';
+import { MEMBERS, displayName, initialState, normalizedState, buyerFor, purchaseTransition, undoTransition } from './rotation.js?v=20261112-order2';
 
 const $ = (id) => document.getElementById(id);
 const storageKey = 'coffee-turn-demo-v1';
