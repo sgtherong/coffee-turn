@@ -8,7 +8,7 @@
   <title>Coffee Turn · 오늘은 누가 살까?</title>
   <link rel="icon" type="image/svg+xml" href="./assets/icon.svg" />
   <link rel="stylesheet" href="./styles.css" />
-  <script type="module" src="./app.js?v=20261107-safari4"></script>
+  <script type="module" src="./app.js?v=20261112-order2"></script>
 </head>
 <body>
   <main class="shell">
@@ -42,7 +42,7 @@
       <div class="heading"><span class="eyebrow">THE DAILY COFFEE RITUAL</span><h1>오늘은 누가 살까?</h1><p>실제 커피를 구매했을 때만 순번이 넘어가요.</p></div>
 
       <div class="mode-switch" role="group" aria-label="순번 모드">
-        <button type="button" data-mode="ABC" class="mode-button active" aria-pressed="true"><span class="mode-name">3인 모드</span><small>토니 · 코비 · 영</small></button>
+        <button type="button" data-mode="ABC" class="mode-button active" aria-pressed="true"><span class="mode-name">3인 모드</span><small>토니 · 영 · 코비</small></button>
         <button type="button" data-mode="AB" class="mode-button" aria-pressed="false"><span class="mode-name">2인 모드</span><small>토니 · 코비</small></button>
       </div>
 
@@ -58,7 +58,7 @@
       <section class="mini-panel">
         <div class="section-head"><h2>순번 현황</h2><span id="count-note" class="meta">3인 모드 · 완료 0회</span></div>
         <div id="member-row" class="member-row" aria-label="다음 구매자부터의 순서"></div>
-        <p id="rotation-order" class="rotation-order" aria-live="polite">토니 → 코비 → 영 → 토니</p>
+        <p id="rotation-order" class="rotation-order" aria-live="polite">토니 → 영 → 코비 → 토니</p>
         <div class="mode-counts"><span id="abc-count">3인 구매 0회</span><span class="tiny-dot">·</span><span id="ab-count">2인 구매 0회</span></div>
       </section>
 
